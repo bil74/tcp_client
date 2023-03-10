@@ -126,7 +126,13 @@ int __cdecl main(int argc, char **argv)
 
 
 	int curr_text = 0;
+	long long counter = 0;
+	int disp_cnt = 1;
 	do{
+		if (restart && disp_cnt){
+			printf("----- cycle #%lld\n", counter);
+			disp_cnt = 0;
+		}
 		strcpy(sendbuf, texts[curr_text]);
 		
 		// Initialize Winsock
@@ -225,10 +231,14 @@ int __cdecl main(int argc, char **argv)
 		//prepare text
 		curr_text++;
 		if (curr_text >= num_texts){
-			if (restart)
+			if (restart){
 				curr_text = 0;
-			else
+				disp_cnt = 1;
+				counter++;
+			}
+			else{
 				break;
+			}
 		}
 		
 		printf("sleep %d millisecs\n", delay);
