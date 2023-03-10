@@ -1,0 +1,6 @@
+address=127.0.0.1
+port=10300
+delay_millisec=1000
+restart_after_end=1
+text=message1
+text=message2

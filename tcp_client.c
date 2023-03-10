@@ -17,6 +17,7 @@
 char address[200] = "0.0.0.0";
 char port[10] = "0";
 int delay;
+int restart;
 #define NUM_TEXTS_MAX 100
 char* texts[NUM_TEXTS_MAX] = {0};
 int num_texts = 0;
@@ -52,6 +53,11 @@ int load_config(void)
 				}
 				if (strstr(input_sor, "delay_millisec") == input_sor){
 					delay = atoi(data);
+				}
+				if (strstr(input_sor, "restart_after_end") == input_sor){
+					if (atoi(data) != 0){
+						restart = 1;
+					}
 				}
 				if (strstr(input_sor, "text") == input_sor && (num_texts < NUM_TEXTS_MAX)){
 					char* tmp_txt = malloc(strlen(data) + 1);
@@ -95,28 +101,33 @@ int __cdecl main(int argc, char **argv)
 		return 1;
 	}
 
+	//some check
+	if (!num_texts){
+		printf("*** No text defined in config file! Exiting!\n");
+		return 1;
+	}
+
 	//test printing datas
 	if (1){
+		printf("---------------- parameters used ----------------\n");
 		printf("address: %s:%s\n", address, port);
+		printf("delay: %d millisecs\n", delay);
+		printf("number of messages: %d\n", num_texts);
+		printf("restart after end: %s\n", restart == 1 ? "YES": "NO");
 		int i;
 		if (0){
 			for(i = 0; i < num_texts; i++){
 				printf("%01d:%s\n", i, texts[i]);
 			}
 		}
+		printf("-------------------------------------------------\n");
+
 	}
 
-	if (!num_texts){
-		printf("*** No text defined in config file! Exiting!\n");
-		return 1;
-	}
 
 	int curr_text = 0;
 	do{
-		if (curr_text >= num_texts){
-			curr_text = 0;
-		}
-		strcpy(sendbuf, texts[curr_text++]);
+		strcpy(sendbuf, texts[curr_text]);
 		
 		// Initialize Winsock
 		iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -178,7 +189,7 @@ int __cdecl main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("sendbuf(%ld): %s(%d)\n", iResult, sendbuf, strlen(sendbuf));
+		printf("sendbuf(%ld): %s\n", iResult, sendbuf);
 		//printf("Bytes Sent: %ld\n", iResult);
 
 		// shutdown the connection since no more data will be sent
@@ -200,7 +211,7 @@ int __cdecl main(int argc, char **argv)
 			}
 			else if ( iResult == 0 ){
 				printf("\n");
-				printf("Connection closed\n");
+				//printf("Connection closed\n");
 			}
 			else
 				printf("recv failed with error: %d\n", WSAGetLastError());
@@ -210,11 +221,22 @@ int __cdecl main(int argc, char **argv)
 		// cleanup
 		closesocket(ConnectSocket);
 
+	    WSACleanup();
+		//prepare text
+		curr_text++;
+		if (curr_text >= num_texts){
+			if (restart)
+				curr_text = 0;
+			else
+				break;
+		}
+		
 		printf("sleep %d millisecs\n", delay);
 		Sleep(delay);
+		printf("\n");
 
 
-	    WSACleanup();
+
 	}while(!kbhit());
 
     return 0;
