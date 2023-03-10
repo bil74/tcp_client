@@ -16,8 +16,8 @@
 #define DEFAULT_BUFLEN 4096
 char address[200] = "0.0.0.0";
 char port[10] = "0";
-int delay;
-int restart;
+int delay = 5000;
+int restart = 0;
 #define NUM_TEXTS_MAX 100
 char* texts[NUM_TEXTS_MAX] = {0};
 int num_texts = 0;
@@ -112,8 +112,8 @@ int __cdecl main(int argc, char **argv)
 		printf("---------------- parameters used ----------------\n");
 		printf("address: %s:%s\n", address, port);
 		printf("delay: %d millisecs\n", delay);
-		printf("number of messages: %d\n", num_texts);
 		printf("restart after end: %s\n", restart == 1 ? "YES": "NO");
+		printf("number of messages: %d\n", num_texts);
 		int i;
 		if (0){
 			for(i = 0; i < num_texts; i++){
